@@ -1,8 +1,9 @@
 import Layout from "@/components/Layout";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { withSwal } from 'react-sweetalert2';
 
-export default function Categories(){
+function Categories({swal}){
     const [editedCategory, setEditedCategory] = useState(null);
     const [name, setName] = useState("");
     const [categories, setCategories] = useState([]);
@@ -39,6 +40,24 @@ export default function Categories(){
         setEditedCategory(category);
         setName(category.name);
         setParentCategory(category.parent?._id);
+    }
+
+    function deleteCategory(category){
+        swal.fire({
+            title: 'Are you Sure?',
+            text: `Do you want to delete ${category.name}`,
+            showCancelButton: true,
+            cancelButtonText: "Cancel",
+            confirmButtonText: "Yes, Delete!",
+            confirmButtonColor: "#d55",
+            reverseButtons: true,
+        }).then(async result => {
+            if(result.isConfirmed){
+                const {_id} = category;
+                await axios.delete(`/api/categories?_id=${_id}`);
+                fetchCategories();
+            }
+        });
     }
 
     return(
@@ -79,7 +98,7 @@ export default function Categories(){
                                 <td>{category?.parent?.name}</td>
                                 <td>
                                     <button className="btn-primary mr-1" onClick={() => editCategory(category)}>Edit</button>
-                                    <button className="btn-primary">Delete</button>
+                                    <button className="btn-primary" onClick={() => deleteCategory(category)}>Delete</button>
                                 </td>
                             </tr>
                         )
@@ -87,5 +106,9 @@ export default function Categories(){
                 </tbody>
             </table>
         </Layout>
-    )
+    );
 }
+
+export default withSwal(({swal}, ref) =>(
+    <Categories swal={swal}/>
+))
