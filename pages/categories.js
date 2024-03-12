@@ -8,6 +8,7 @@ function Categories({swal}){
     const [name, setName] = useState("");
     const [categories, setCategories] = useState([]);
     const [parentCategory, setParentCategory] = useState("");
+    const [properties, setProperties] = useState([]);
 
     useEffect(() =>{
        fetchCategories();
@@ -60,27 +61,85 @@ function Categories({swal}){
         });
     }
 
+    function addProperty(){
+        setProperties(prev => {
+            return [...prev, {name:"", values: ""}];
+        });
+    }
+
+    function handlePropertyNameChange(index, property, newName){
+        setProperties(prev => {
+            const properties = [...prev];
+            properties[index].name = newName;
+            return properties;
+          });
+    }
+
+    function handlePropertyValuesChange(index, property, newValues) {
+        setProperties(prev => {
+          const properties = [...prev];
+          properties[index].values = newValues;
+          return properties;
+        });
+      }
+
+      function removeProperty(indexToRemove){
+        setProperties(prev => {
+            return [...prev].filter((p, pIndex) => {
+                return pIndex !== indexToRemove;
+            });
+        });
+      }
+
     return(
         <Layout>
             <h1>Categories</h1>
             <label>{editedCategory ? `Edit Category ${editedCategory.name}` : "New Category"}</label>
-            <form onSubmit={saveCategory} className="flex gap-1">
-                <input 
-                className="mb-0" 
-                type="text" 
-                placeholder="Category Name" 
-                value={name} 
-                onChange={e => setName(e.target.value)}/>
-                <select 
-                    className="mb-0" 
-                    value={parentCategory}
-                    onChange={e => setParentCategory(e.target.value)}>
-                    <option value="0">No Parent Category</option>
-                    {categories.length > 0 && categories.map(category => (
-                           <option value={category._id} key={category._id}>{category.name}</option>
-                        )
-                    )}
-                </select>
+            <form onSubmit={saveCategory}>
+                <div className="flex gap-1">
+                    <input 
+                    type="text" 
+                    placeholder="Category Name" 
+                    value={name} 
+                    onChange={e => setName(e.target.value)}/>
+                    <select 
+                        value={parentCategory}
+                        onChange={e => setParentCategory(e.target.value)}>
+                        <option value="0">No Parent Category</option>
+                        {categories.length > 0 && categories.map(category => (
+                            <option value={category._id} key={category._id}>{category.name}</option>
+                            )
+                        )}
+                    </select>
+                </div>
+                <div className="mb-2">
+                    <label className="block">Properties</label>
+                    <button onClick= {addProperty}
+                            type="button"
+                            className="btn-default text-sm mb-2">
+                            Add New Property
+                    </button>
+                    {properties.length > 0 && properties.map((property, index) =>(
+                        <div key={property.value} className="flex gap-1 mb-2">
+                            <input type="text" 
+                                    value={property.name} 
+                                    onChange={(e) => handlePropertyNameChange(index, property, e.target.value)}
+                                    className="mb-0"
+                                    placeholder="Property Name (example: Color)"/>
+                            <input type="text" 
+                                    value={property.values} 
+                                    onChange={e => handlePropertyValuesChange(index, property, e.target.value)}
+                                    className="mb-0"
+                                    placeholder="Values, comma separated"/>
+                            <button 
+                            type="button"
+                            onClick={() => removeProperty(index)}
+                            className="btn-default">
+                            Remove</button>
+                        </div>
+                    ))}
+                </div>
+
                 <button type="submit" className="btn-primary py-1">Save</button>
             </form>
             <table className="basic mt-4">
